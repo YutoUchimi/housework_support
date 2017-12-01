@@ -1,0 +1,70 @@
+<launch>
+
+  <arg name="NODELET_MANAGER" value="sample_manager"/>
+  <arg name="INPUT_CLOUD" value="/head_camera/depth_registered/points"/>
+  <arg name="FIXED_FRAME" value="base_link"/>
+
+  <node name="$(arg NODELET_MANAGER)"
+        pkg="nodelet" type="nodelet" args="manager"/>
+
+  <node name="multi_plane_estimate"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg NODELET_MANAGER)"
+        output="screen">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <rosparam>
+      max_curvature: 0.01
+      estimate_normal: true
+    </rosparam>
+  </node>
+  <node name="cluster_indices_decomposer_table"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap from="~target" to="multi_plane_estimate/output"/>
+    <rosparam>
+      approximate_sync: true
+      queue_size: 1000
+    </rosparam>
+  </node>
+  <node name="extract_indices_table"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ExtractIndices $(arg NODELET_MANAGER)">
+    <remap from="~input" to="$(arg INPUT_CLOUD)" />
+    <remap from="~indices" to="cluster_indices_decomposer_table/negative_indices" />
+    <rosparam>
+      approximate_sync: true
+      queue_size: 100
+      keep_organized: true
+    </rosparam>
+  </node>
+  <node name="euclidean_clustering"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/EuclideanClustering $(arg NODELET_MANAGER)">
+    <remap from="~input" to="extract_indices_table/output" />
+    <rosparam>
+      min_size: 100
+      max_size: 10000
+      tolerance: 0.05
+    </rosparam>
+  </node>
+  <node name="cluster_indices_decomposer_target"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)">
+    <remap from="~input" to="extract_indices_table/output" />
+    <remap from="~target" to="euclidean_clustering/output" />
+    <rosparam subst_value="true">
+      approximate_sync: false
+      queue_size: 100
+      sort_by: -cloud_size
+      align_boxes: true
+      align_boxes_with_plane: false
+      use_pca: true
+      target_frame_id: $(arg FIXED_FRAME)
+    </rosparam>
+  </node>
+
+  <node name="store_objects_from_table_to_shelf"
+        pkg="housework_support" type="fetch-store-objects-from-table-to-shelf.l"/>
+
+</launch>
