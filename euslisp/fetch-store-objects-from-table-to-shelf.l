@@ -11,10 +11,13 @@
 
 
 (defvar obj-list)
-(defvar place-pos-fetch-frame)
+(defvar place-coords-world-frame)
 (defvar room-to-map-transform)
 
-(setq place-pos-fetch-frame (float-vector 800 0 1500))
+(setq place-coords-world-frame
+      (make-coords
+       :pos (send (send (send *room* :object "room73b2-kitchen-shelf") :copy-worldcoords) :pos)
+       :rpy (float-vector pi 0 0)))
 (setq room-to-map-transform
       (make-coords :pos (float-vector 0 6675 0) :rpy (float-vector 0 0 0)))
 
@@ -93,6 +96,7 @@
       (one-shot-subscribe centroids-topic
                           geometry_msgs::PoseArray))
 
+    ;; get largest bounding box
     (setq bbox (car (send bboxes-msg :boxes)))
     (setq centroid (car (send centroids-msg :poses)))
 
@@ -159,36 +163,38 @@
 (defun place-object ()
   ;; bring object to in front of the shelf
   (send *fetch* :inverse-kinematics
-        (make-coords :pos (v+ place-pos-fetch-frame (float-vector -200 0 100))
-                     :rpy (float-vector 0 0 0))
+        (make-coords :pos (v+ (send place-coords-world-frame :pos) (float-vector 200 0 100))
+                     :rpy (send place-coords-world-frame :rpy))
         :debug-view nil
         :revert-if-fail t)
+  (send *irtviewer* :redraw)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 20000)
   (send *ri* :wait-interpolation)
 
   ;; bring object to over the target place
   (send *fetch* :inverse-kinematics
-        (make-coords :pos (v+ place-pos-fetch-frame (float-vector 0 0 100))
-                     :rpy (float-vector 0 0 0))
+        (make-coords :pos (v+ (send place-coords-world-frame :pos) (float-vector 0 0 100))
+                     :rpy (send place-coords-world-frame :rpy))
         :debug-view nil
         :revert-if-fail t)
+  (send *irtviewer* :redraw)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
   ;; bring object to the very target place
-  (send *fetch* :inverse-kinematics
-        (make-coords :pos place-pos-fetch-frame
-                     :rpy (float-vector 0 0 0))
+  (send *fetch* :inverse-kinematics place-coords-world-frame
         :debug-view nil
         :revert-if-fail t)
+  (send *irtviewer* :redraw)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
   ;; release object
-  (send *ri* stop-grasp)
+  (send *ri* :stop-grasp)
 
   ;; reset pose
   (send *fetch* :reset-pose)
+  (send *irtviewer* :redraw)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 20000)
   (send *ri* :wait-interpolation)
   )
