@@ -19,7 +19,8 @@
   </node>
   <node name="cluster_indices_decomposer_table"
         pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)">
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)"
+        output="screen">
     <remap from="~input" to="$(arg INPUT_CLOUD)"/>
     <remap from="~target" to="multi_plane_estimate/output"/>
     <rosparam>
@@ -29,7 +30,8 @@
   </node>
   <node name="extract_indices_table"
         pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/ExtractIndices $(arg NODELET_MANAGER)">
+        args="load jsk_pcl/ExtractIndices $(arg NODELET_MANAGER)"
+        output="screen">
     <remap from="~input" to="$(arg INPUT_CLOUD)" />
     <remap from="~indices" to="cluster_indices_decomposer_table/negative_indices" />
     <rosparam>
@@ -40,7 +42,8 @@
   </node>
   <node name="euclidean_clustering"
         pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/EuclideanClustering $(arg NODELET_MANAGER)">
+        args="load jsk_pcl/EuclideanClustering $(arg NODELET_MANAGER)"
+        output="screen">
     <remap from="~input" to="extract_indices_table/output" />
     <rosparam>
       min_size: 100
@@ -50,7 +53,8 @@
   </node>
   <node name="cluster_indices_decomposer_target"
         pkg="nodelet" type="nodelet"
-        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)">
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)"
+        output="screen">
     <remap from="~input" to="extract_indices_table/output" />
     <remap from="~target" to="euclidean_clustering/output" />
     <rosparam subst_value="true">
@@ -65,6 +69,8 @@
   </node>
 
   <node name="store_objects_from_table_to_shelf"
-        pkg="housework_support" type="fetch-store-objects-from-table-to-shelf.l"/>
+        pkg="housework_support" type="fetch-store-objects-from-table-to-shelf.l"
+        args="&quot;(main)&quot;"
+        output="screen"/>
 
 </launch>
