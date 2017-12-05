@@ -1,38 +1,65 @@
 <launch>
 
-  <arg name="NODELET_MANAGER" value="sample_manager"/>
-  <arg name="INPUT_CLOUD" value="/head_camera/depth_registered/points"/>
+  <arg name="camera" value="head_camera"/>
+  <arg name="gui" default="true"/>
+
   <arg name="FIXED_FRAME" value="base_link"/>
+  <arg name="NODELET_MANAGER" value="sample_manager"/>
 
   <node name="$(arg NODELET_MANAGER)"
         pkg="nodelet" type="nodelet" args="manager"/>
 
+  <!-- Run openni2.launch on localhost -->
+  <node name="republish_rgb"
+        pkg="image_transport" type="republish"
+        args="compressed raw">
+    <remap from="in" to="/$(arg camera)/rgb/image_raw"/>
+    <remap from="out" to="/$(arg camera)_local/rgb/image_raw"/>
+  </node>
+
+  <node name="republish_depth"
+        pkg="image_transport" type="republish"
+        args="compressedDepth raw">
+    <remap from="in" to="/$(arg camera)/depth/image_raw"/>
+    <remap from="out" to="/$(arg camera)_local/depth/image_raw"/>
+  </node>
+
+  <include file="$(find openni2_launch)/launch/openni2.launch">
+    <arg name="load_driver" value="false"/>
+    <arg name="camera" value="$(arg camera)_local"/>
+    <arg name="depth_registration" value="true"/>
+    <arg name="publish_tf" value="false"/>
+  </include>
+
+  <!-- Main Process -->
   <node name="multi_plane_estimate"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg NODELET_MANAGER)"
         output="screen">
-    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap from="~input" to="/$(arg camera)_local/depth_registered/points"/>
     <rosparam>
       max_curvature: 0.01
       estimate_normal: true
     </rosparam>
   </node>
+
   <node name="cluster_indices_decomposer_table"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)"
         output="screen">
-    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap from="~input" to="/$(arg camera)_local/depth_registered/points"/>
     <remap from="~target" to="multi_plane_estimate/output"/>
     <rosparam>
       approximate_sync: true
       queue_size: 1000
     </rosparam>
   </node>
+
   <node name="extract_indices_table"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ExtractIndices $(arg NODELET_MANAGER)"
         output="screen">
-    <remap from="~input" to="$(arg INPUT_CLOUD)" />
+    <remap from="~input" to="/$(arg camera)_local/depth_registered/points" />
     <remap from="~indices" to="cluster_indices_decomposer_table/negative_indices" />
     <rosparam>
       approximate_sync: true
@@ -40,6 +67,7 @@
       keep_organized: true
     </rosparam>
   </node>
+
   <node name="euclidean_clustering"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/EuclideanClustering $(arg NODELET_MANAGER)"
@@ -51,6 +79,7 @@
       tolerance: 0.05
     </rosparam>
   </node>
+
   <node name="cluster_indices_decomposer_target"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)"
