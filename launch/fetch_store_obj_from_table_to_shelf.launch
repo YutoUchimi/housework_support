@@ -102,4 +102,11 @@
         args="&quot;(main)&quot;"
         output="screen"/>
 
+  <!-- Visualization -->
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find housework_support)/rvizconfig/fetch_store_obj_from_table_to_shelf.rviz"/>
+  </group>
+
 </launch>
