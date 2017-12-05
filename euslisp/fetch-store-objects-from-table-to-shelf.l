@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "jsk_gui_msgs")
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "geometry_msgs")
 
@@ -91,6 +92,15 @@
           :relative-pose (send (send *room* :object "room73b2-kitchen-shelf") :copy-worldcoords)
           :object-id (format nil "kitchen-shelf"))
     ))
+
+
+(defun wait-for-user-input ()
+  (let ((req (instance jsk_gui_msgs::YesNoRequest :init)))
+    (ros::wait-for-service "/rviz/yes_no_button")
+    (ros::ros-info "Please select to start program or not.")
+    (setq res (ros::service-call "/rviz/yes_no_button" req))
+    (when (send res :yes)
+      (ros::ros-info "Requesting to start program."))))
 
 
 (defun go-to-table ()
@@ -267,6 +277,7 @@
     ;; (init :moveit t)
     (init)
     (make-collision-object)
+    (wait-for-user-input)
     (go-to-table)
     (recognize-object bbox-coords-world-frame)
     (pick-object bbox-coords-world-frame)

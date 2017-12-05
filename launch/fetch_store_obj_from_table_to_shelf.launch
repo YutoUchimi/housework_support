@@ -99,6 +99,11 @@
     </rosparam>
   </node>
 
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn">
+    <remap from="~" to="/rviz/yes_no_button"/>
+  </node>
+
   <node name="store_objects_from_table_to_shelf"
         pkg="housework_support" type="fetch-store-objects-from-table-to-shelf.l"
         args="&quot;(main)&quot;"
