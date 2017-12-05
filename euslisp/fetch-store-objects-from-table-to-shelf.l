@@ -112,6 +112,7 @@
 
     ;; look down
     (send *fetch* :head :neck-p :joint-angle (deg2rad 15))
+    (redraw)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
 
     (setq bboxes-topic "cluster_indices_decomposer_target/boxes")
@@ -140,6 +141,7 @@
     (setq bbox-y (* 1000 (send centroid :position :y)))
     (setq bbox-z (* 1000 (send bbox :pose :position :z)))
 
+    ;; get coordinates of bbox (frame: world)
     (setq bbox-coords-fetch-frame (make-cascoords))
     (send (send *fetch* :link (format nil "~a" fixed-frame)) :assoc bbox-coords-fetch-frame)
     (send bbox-coords-fetch-frame :newcoords
