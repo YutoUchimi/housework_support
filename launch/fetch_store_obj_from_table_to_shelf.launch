@@ -100,7 +100,11 @@
   <node name="store_objects_from_table_to_shelf"
         pkg="housework_support" type="fetch-store-objects-from-table-to-shelf.l"
         args="&quot;(main)&quot;"
-        output="screen"/>
+        output="screen">
+    <rosparam>
+      fixed_frame: $(arg FIXED_FRAME)
+    </rosparam>
+  </node>
 
   <!-- Visualization -->
   <group if="$(arg gui)">

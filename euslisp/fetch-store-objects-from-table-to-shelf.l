@@ -103,7 +103,8 @@
 
 
 (defun recognize-object (bbox-coords-world-frame)
-  (let (bboxes-topic bboxes-msg bbox
+  (let (fixed-frame
+        bboxes-topic bboxes-msg bbox
         centroids-topic centroids-msg centroid
         bbox-x bbox-y bbox-z
         bbox-coords-fetch-frame)
@@ -126,6 +127,9 @@
       (one-shot-subscribe centroids-topic
                           geometry_msgs::PoseArray))
 
+    ;; get rosparam from /fixed_frame
+    (setq fixed-frame (ros::get-param "/fixed_frame"))
+
     ;; get largest bounding box
     (setq bbox (car (send bboxes-msg :boxes)))
     (setq centroid (car (send centroids-msg :poses)))
@@ -137,7 +141,7 @@
     (setq bbox-z (* 1000 (send bbox :pose :position :z)))
 
     (setq bbox-coords-fetch-frame (make-cascoords))
-    (send (send *fetch* :link "base_link") :assoc bbox-coords-fetch-frame)
+    (send (send *fetch* :link (format nil "~a" fixed-frame)) :assoc bbox-coords-fetch-frame)
     (send bbox-coords-fetch-frame :newcoords
           :newpos (float-vector bbox-x bbox-y bbox-z))
     (setq bbox-coords-world-frame
