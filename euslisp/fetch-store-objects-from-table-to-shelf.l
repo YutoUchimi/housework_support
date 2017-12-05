@@ -13,6 +13,7 @@
 (defvar place-coords-world-frame)
 (defvar room-to-map-transform)
 (defvar shelf-spot)
+(defvar show-irtviewer)
 
 ;; parameters
 ;; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<
@@ -22,10 +23,11 @@
 
 
 (defun redraw ()
-  (send *irtviewer* :redraw)
-  (send *irtviewer* :look-all
-        (geo::make-bounding-box
-         (flatten (send-all (send *fetch* :bodies) :vertices)))))
+  (when show-irtviewer
+    (send *irtviewer* :redraw)
+    (send *irtviewer* :look-all
+          (geo::make-bounding-box
+           (flatten (send-all (send *fetch* :bodies) :vertices))))))
 
 
 (defun init (&key (moveit nil))
@@ -41,7 +43,9 @@
   (send *fetch* :move-to (make-coords) :world)
   (send *room* :move-to room-to-map-transform :world)
 
-  (objects (list *fetch* *room*))
+  (setq show-irtviewer (ros::get-param "~show_irtviewer"))
+  (when show-irtviewer
+    (objects (list *fetch* *room*)))
 
   ;; parameters
   ;; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -129,7 +133,7 @@
                           geometry_msgs::PoseArray))
 
     ;; get rosparam from /fixed_frame
-    (setq fixed-frame (ros::get-param "/fixed_frame"))
+    (setq fixed-frame (ros::get-param "~fixed_frame"))
 
     ;; get largest bounding box
     (setq bbox (car (send bboxes-msg :boxes)))
