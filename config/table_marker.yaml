@@ -1,0 +1,6 @@
+boxes:
+- dimensions: [0.6, 0.6, 0.4]
+  frame_id: map
+  name: table
+  orientation: [0.0, 0.0, 0.0, 1.0]
+  position: [2.4421348571777344, 9.085287094116211, 0.8660016655921936]
