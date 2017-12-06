@@ -128,8 +128,8 @@
 
 (defun recognize-object (bbox-coords-world-frame)
   (let (fixed-frame
-        bboxes-topic bboxes-msg bbox
-        centroids-topic centroids-msg centroid
+        bboxes-topic bboxes-msg (bbox nil)
+        centroids-topic centroids-msg (centroid nil)
         bbox-x bbox-y bbox-z
         bbox-coords-fetch-frame)
     (ros::ros-info "Searching object...")
@@ -142,28 +142,30 @@
     (setq bboxes-topic "/cluster_indices_decomposer_target/boxes")
     (setq centroids-topic "/cluster_indices_decomposer_target/centroid_pose_array")
 
-    ;; subscribe topics
-    (ros::ros-info "Wait for subscribing: ~A~%" bboxes-topic)
-    (ros::ros-info "Wait for subscribing: ~A~%" centroids-topic)
-    (setq bboxes-msg
-      (one-shot-subscribe bboxes-topic
-                          jsk_recognition_msgs::BoundingBoxArray))
-    (setq centroids-msg
-      (one-shot-subscribe centroids-topic
-                          geometry_msgs::PoseArray))
+    (while (or (null bbox) (null centroid))
+      ;; subscribe topics
+      (ros::ros-info "Wait for subscribing: ~A~%" bboxes-topic)
+      (ros::ros-info "Wait for subscribing: ~A~%" centroids-topic)
+      (setq bboxes-msg
+            (one-shot-subscribe bboxes-topic
+                                jsk_recognition_msgs::BoundingBoxArray))
+      (setq centroids-msg
+            (one-shot-subscribe centroids-topic
+                                geometry_msgs::PoseArray))
 
-    ;; get rosparam from /fixed_frame
-    (setq fixed-frame (ros::get-param "~fixed_frame"))
-
-    ;; get largest bounding box
-    (setq bbox (car (send bboxes-msg :boxes)))
-    (setq centroid (car (send centroids-msg :poses)))
+      ;; get largest bounding box
+      (setq bbox (car (send bboxes-msg :boxes)))
+      (setq centroid (car (send centroids-msg :poses)))
+      )
 
     ;; get position of bbox (frame: base_link)
     ;; convert metric: m -> mm
     (setq bbox-x (* 1000 (send (send centroid :position) :x)))
     (setq bbox-y (* 1000 (send (send centroid :position) :y)))
     (setq bbox-z (* 1000 (send (send (send bbox :pose) :position) :z)))
+
+    ;; get rosparam from /fixed_frame
+    (setq fixed-frame (ros::get-param "~fixed_frame"))
 
     ;; get coordinates of bbox (frame: world)
     (setq bbox-coords-fetch-frame (make-cascoords))
