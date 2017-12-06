@@ -55,7 +55,7 @@
           (send (send *room* :object "room73b2-kitchen-shelf") :copy-worldcoords))
     (setq place-coords-world-frame
           (make-coords :pos (v+ (send tmp-coords :pos)
-                                (float-vector 100 0 100))
+                                (float-vector 100 0 80))
                        :rpy (float-vector pi 0 0)))
 
     (setq tmp-coords
@@ -280,6 +280,17 @@
   ;; release object
   (ros::ros-info "Releasing object...")
   (send *ri* :stop-grasp)
+
+  ;; middle pose to reset pose
+  (send *fetch* :inverse-kinematics
+        (make-coords :pos (v+ (send place-coords-world-frame :pos) (float-vector 200 0 100))
+                     :rpy (car (rpy-angle (send place-coords-world-frame :rot))))
+        :stop 500
+        :debug-view nil
+        :revert-if-fail t)
+  (redraw)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
 
   ;; reset pose
   (send *fetch* :reset-pose)
