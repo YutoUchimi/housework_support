@@ -82,6 +82,16 @@
           :relative-pose (send (send *room* :object "room73b2-coe-450-shelf") :copy-worldcoords)
           :object-id (format nil "table"))
 
+    (send *co* :add-object (send *room* :object "room73b2-coe-800-shelf")
+          :frame-id "base_link"
+          :relative-pose (send (send *room* :object "room73b2-coe-800-shelf") :copy-worldcoords)
+          :object-id (format nil "side-table"))
+
+    (send *co* :add-object (send *room* :object "room73b2-toshiba-clacio-refrigerator")
+          :frame-id "base_link"
+          :relative-pose (send (send *room* :object "room73b2-toshiba-clacio-refrigerator") :copy-worldcoords)
+          :object-id (format nil "refrigerator"))
+
     (send *co* :add-object (send *room* :object "room73b2-kitchen")
           :frame-id "base_link"
           :relative-pose (send (send *room* :object "room73b2-kitchen") :copy-worldcoords)
@@ -273,9 +283,7 @@
 
 (defun main ()
   (let (bbox-coords-world-frame)
-    ;; TODO(YutoUchimi): Use moveit when running program with real robot.
-    ;; (init :moveit t)
-    (init)
+    (init :moveit t)
     (make-collision-object)
     (wait-for-user-input)
     (go-to-table)
