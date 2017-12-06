@@ -125,7 +125,7 @@
     (ros::ros-info "Searching object...")
 
     ;; look down
-    (send *fetch* :head :neck-p :joint-angle (deg2rad 15))
+    (send *fetch* :head :neck-p :joint-angle 15)
     (redraw)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
 
