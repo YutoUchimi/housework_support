@@ -139,8 +139,8 @@
     (redraw)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
 
-    (setq bboxes-topic "cluster_indices_decomposer_target/boxes")
-    (setq centroids-topic "cluster_indices_decomposer_target/centroid_pose_array")
+    (setq bboxes-topic "/cluster_indices_decomposer_target/boxes")
+    (setq centroids-topic "/cluster_indices_decomposer_target/centroid_pose_array")
 
     ;; subscribe topics
     (ros::ros-info "Wait for subscribing: ~A~%" bboxes-topic)
