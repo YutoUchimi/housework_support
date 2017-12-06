@@ -161,9 +161,9 @@
 
     ;; get position of bbox (frame: base_link)
     ;; convert metric: m -> mm
-    (setq bbox-x (* 1000 (send centroid :position :x)))
-    (setq bbox-y (* 1000 (send centroid :position :y)))
-    (setq bbox-z (* 1000 (send bbox :pose :position :z)))
+    (setq bbox-x (* 1000 (send (send centroid :position) :x)))
+    (setq bbox-y (* 1000 (send (send centroid :position) :y)))
+    (setq bbox-z (* 1000 (send (send (send bbox :pose) :position) :z)))
 
     ;; get coordinates of bbox (frame: world)
     (setq bbox-coords-fetch-frame (make-cascoords))
