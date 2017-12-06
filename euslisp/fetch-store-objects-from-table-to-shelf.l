@@ -124,6 +124,7 @@
         :frame-id "/map"
         :no-wait nil)
   (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  (redraw)
   )
 
 
@@ -146,10 +147,10 @@
     (while (or (null bbox) (null centroid))
       ;; subscribe topics
       (ros::ros-info "Wait for subscribing: ~A~%" bboxes-topic)
-      (ros::ros-info "Wait for subscribing: ~A~%" centroids-topic)
       (setq bboxes-msg
             (one-shot-subscribe bboxes-topic
                                 jsk_recognition_msgs::BoundingBoxArray))
+      (ros::ros-info "Wait for subscribing: ~A~%" centroids-topic)
       (setq centroids-msg
             (one-shot-subscribe centroids-topic
                                 geometry_msgs::PoseArray))
@@ -175,6 +176,8 @@
           :newpos (float-vector bbox-x bbox-y bbox-z))
     (setq bbox-coords-world-frame
           (send *room* :transformation bbox-coords-fetch-frame))
+    (ros::ros-info "Bounding box found (at fetch frame): ~a" bbox-coords-fetch-frame)
+    (ros::ros-info "Bounding box found (at world frame): ~a" bbox-coords-world-frame)
     ))
 
 
@@ -237,6 +240,7 @@
         :frame-id "/map"
         :no-wait nil)
   (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  (redraw)
   )
 
 
