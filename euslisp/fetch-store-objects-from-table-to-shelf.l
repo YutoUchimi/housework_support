@@ -38,9 +38,9 @@
       )
 
     ;; convert metric: m -> mm
-    (setq pos-x (/ (send (send (send transform-msg :transform) :translation) :x) 1000))
-    (setq pos-y (/ (send (send (send transform-msg :transform) :translation) :y) 1000))
-    (setq pos-z (/ (send (send (send transform-msg :transform) :translation) :z) 1000))
+    (setq pos-x (* (send (send (send transform-msg :transform) :translation) :x) 1000))
+    (setq pos-y (* (send (send (send transform-msg :transform) :translation) :y) 1000))
+    (setq pos-z (* (send (send (send transform-msg :transform) :translation) :z) 1000))
 
     ;; tf->eus: (x y z w) -> (w x y z)
     (setq rot-x (send (send (send transform-msg :transform) :rotation) :x))
