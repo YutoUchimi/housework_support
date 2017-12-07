@@ -23,6 +23,36 @@
 ;; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
+(defun get-map-to-base-coords ()
+  (let (transform-topic (transform-msg nil)
+        pos-x pos-y pos-z
+        rot-x rot-y rot-z rot-w rot-rpy)
+    (setq transform-topic "/tf_to_transform/output")
+
+    (while (null transform-msg)
+      ;; subscribe topics
+      (ros::ros-info "Wait for subscribing: ~A~%" transform-topic)
+      (setq transform-msg
+            (one-shot-subscribe transform-topic
+                                geometry_msgs::TransformStamped))
+      )
+
+    ;; convert metric: m -> mm
+    (setq pos-x (/ (send (send (send transform-msg :transform) :translation) :x) 1000))
+    (setq pos-y (/ (send (send (send transform-msg :transform) :translation) :y) 1000))
+    (setq pos-z (/ (send (send (send transform-msg :transform) :translation) :z) 1000))
+
+    ;; tf->eus: (x y z w) -> (w x y z)
+    (setq rot-x (send (send (send transform-msg :transform) :rotation) :x))
+    (setq rot-y (send (send (send transform-msg :transform) :rotation) :y))
+    (setq rot-z (send (send (send transform-msg :transform) :rotation) :z))
+    (setq rot-w (send (send (send transform-msg :transform) :rotation) :w))
+    (setq rot-rpy (rpy-angle (quaternion2matrix (float-vector rot-w rot-x rot-y rot-z))))
+
+    (make-coords :pos (float-vector pos-x pos-y pos-z) :rpy rot-rpy)
+    ))
+
+
 (defun redraw ()
   (when show-irtviewer
     (send *irtviewer* :redraw)
@@ -41,7 +71,8 @@
   (unless (boundp '*room*)
     (setq *room* (room73b2)))
 
-  (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  (send *fetch* :move-to (get-map-to-base-coords) :world)
   (send *room* :move-to room-to-map-transform :world)
 
   (setq show-irtviewer (ros::get-param "~show_irtviewer"))
@@ -123,7 +154,8 @@
         (send (send *room* :spot "coe-spot") :copy-worldcoords)
         :frame-id "/map"
         :no-wait nil)
-  (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  (send *fetch* :move-to (get-map-to-base-coords) :world)
   (redraw)
   )
 
@@ -239,7 +271,8 @@
   (send *ri* :move-to shelf-spot
         :frame-id "/map"
         :no-wait nil)
-  (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
+  (send *fetch* :move-to (get-map-to-base-coords) :world)
   (redraw)
   )
 
