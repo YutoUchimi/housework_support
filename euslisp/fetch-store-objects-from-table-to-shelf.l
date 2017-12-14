@@ -47,7 +47,7 @@
     (setq rot-y (send (send (send transform-msg :transform) :rotation) :y))
     (setq rot-z (send (send (send transform-msg :transform) :rotation) :z))
     (setq rot-w (send (send (send transform-msg :transform) :rotation) :w))
-    (setq rot-rpy (rpy-angle (quaternion2matrix (float-vector rot-w rot-x rot-y rot-z))))
+    (setq rot-rpy (car (rpy-angle (quaternion2matrix (float-vector rot-w rot-x rot-y rot-z)))))
 
     (make-coords :pos (float-vector pos-x pos-y pos-z) :rpy rot-rpy)
     ))

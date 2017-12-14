@@ -3,7 +3,7 @@
   <!-- Arguments -->
   <arg name="camera" value="head_camera"/>
   <arg name="show_rviz" default="true"/>
-  <arg name="show_irtviewer" default="false"/>
+  <arg name="show_irtviewer" default="true"/>
   <arg name="FIXED_FRAME" value="base_link"/>
   <arg name="NODELET_MANAGER" value="sample_manager"/>
 
