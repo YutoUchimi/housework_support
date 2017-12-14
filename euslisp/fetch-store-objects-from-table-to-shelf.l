@@ -71,7 +71,6 @@
   (unless (boundp '*room*)
     (setq *room* (room73b2)))
 
-  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
   (send *fetch* :move-to (get-map-to-base-coords) :world)
   (send *room* :move-to room-to-map-transform :world)
 
@@ -154,7 +153,6 @@
         (send (send *room* :spot "coe-spot") :copy-worldcoords)
         :frame-id "/map"
         :no-wait nil)
-  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
   (send *fetch* :move-to (get-map-to-base-coords) :world)
   (redraw)
   )
@@ -271,7 +269,6 @@
   (send *ri* :move-to shelf-spot
         :frame-id "/map"
         :no-wait nil)
-  ;; (send *fetch* :move-to (send (send *ri* :robot) :copy-worldcoords) :world)
   (send *fetch* :move-to (get-map-to-base-coords) :world)
   (redraw)
   )
@@ -343,4 +340,5 @@
     (pick-object bbox-coords-world-frame)
     (go-to-shelf)
     (place-object)
-    ))
+    )
+  t)
